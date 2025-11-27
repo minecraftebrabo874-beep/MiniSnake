@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mini Snake / Snake Hell</title>
+    <style>
+        /* --- ESTILOS CSS --- */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #2c3e50; 
+            color: #ecf0f1; 
+            font-family: 'Arial', sans-serif;
+            overflow: hidden; 
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            position: relative; 
+        }
+
+        #game-board {
+            border: 5px solid #27ae60; /* Cor padrão verde */
+            background-color: #34495e; 
+            display: grid;
+            touch-action: none;
+            min-width: 200px; 
+            min-height: 200px;
+            transition: border-color 0.3s ease-in-out; /* Transição suave */
+        }
+
+        /* CLASSE PARA BORDA DE SNAKE HELL */
+        #game-board.snake-hell-border {
+            border-color: #ff6b6b; /* Vermelho claro */
+        }
+
+        .snake {
+            background-color: #f1c40f; 
+            border-radius: 2px;
+            transition: 
+                grid-row-start 0.18s linear, 
+                grid-column-start 0.18s linear;
+        }
+
+        .food {
+            background-color: #e74c3c; 
+            border-radius: 50%; 
+        }
+
+        /* Score e High Score */
+        #score-board {
+            position: absolute; 
+            top: 10px;          
+            left: 10px;         
+            padding: 5px 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.4); 
+            border-radius: 5px;
+            z-index: 50; 
+            transition: color 0.3s; 
+        }
+        #score-board.new-record {
+            color: #f1c40f; 
+        }
+
+        #high-score-board { 
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.4);
+            border-radius: 5px;
+            z-index: 50;
+        }
+        #new-record-message { 
+            position: absolute;
+            top: 50px; 
+            right: 10px;
+            padding: 5px 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background-color: #f1c40f; 
+            color: #2c3e50; 
+            border-radius: 5px;
+            z-index: 55;
+            display: none; 
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #3498db; 
+            text-align: center;
+        }
+        
+        /* Botões Modificador, Volume e Fullscreen */
+        .game-control-button {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 15px;
+            font-size: 1em;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 50;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s;
+        }
+
+        #modifier-button {
+            left: 20px;
+            background-color: #3498db; 
+        }
+        
+        /* Novo estilo para o botão de volume */
+        #volume-button {
+            right: 100px; /* Posiciona à esquerda do Fullscreen */
+            background-color: #9b59b6; /* Cor roxa */
+            font-size: 1.5em; 
+            line-height: 1;
+        }
+
+        #fullscreen-button {
+            right: 20px;
+            background-color: #2ecc71; 
+            font-size: 1.5em; 
+            line-height: 1;
+        }
+
+        .game-control-button:disabled {
+            background-color: #7f8c8d; 
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        /* Modal e Overlays (Restante inalterado) */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+        
+        .modal {
+            background-color: #34495e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 400px;
+            color: #ecf0f1;
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+        }
+
+        .control-block {
+            margin-bottom: 25px; 
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .control-block.disabled {
+            opacity: 0.5; 
+            pointer-events: none; 
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            width: 100%;
+        }
+
+        .control-group button {
+            background-color: #e74c3c; 
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #game-over-overlay {
+            position: absolute; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); 
+            display: none; 
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #ecf0f1;
+            font-size: 2em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            cursor: pointer; 
+            z-index: 100;
+        }
+        
+        #record-break-message {
+            font-size: 1.5em;
+            color: #f1c40f; 
+            margin-bottom: 5px;
+            display: none; 
+        }
+        /* --- FIM DOS ESTILOS CSS --- */
+    </style>
+</head>
+<body>
+    
+    <div id="score-board">
+        <span id="score-icon">🔴</span><span id="score-value">0</span>
+    </div>
+    
+    <div id="high-score-board">
+        Recorde: <span id="high-score-value">0</span>
+    </div>
+    <div id="new-record-message">
+        Novo Recorde!
+    </div>
+
+
+    <h1 id="game-title">Mini Snake</h1> 
+    <div id="game-board"></div>
+    <div id="message">Pressione as setas (desktop) ou arraste a tela (celular) para começar!</div>
+
+    <button id="modifier-button" class="game-control-button">Modificadores</button>
+    
+    <button id="volume-button" class="game-control-button" aria-label="Ativar/Desativar Som">🔇</button>
+
+    <button id="fullscreen-button" class="game-control-button" aria-label="Tela Cheia">⛶</button>
+    
+    <audio id="food-sound" src="Som/Comida.mp3" preload="auto"></audio>
+    <audio id="slide-sound" src="Som/Slide.mp3" preload="auto"></audio>
+
+    <div id="speed-overlay" class="overlay">
+        <div class="modal">
+            <h2>Configurações do Jogo</h2> 
+            
+            <div class="control-block">
+                <h3>Modo de Jogo</h3>
+                <div id="mode-controls" class="control-group">
+                    <button id="prev-mode-button">&lt;</button>
+                    <span id="current-mode-display">Mini Snake (Padrão)</span>
+                    <button id="next-mode-button">&gt;</button>
+                </div>
+            </div>
+
+            <div id="size-block" class="control-block">
+                <h3>Tamanho do Mapa</h3>
+                <div id="size-controls" class="control-group">
+                    <button id="prev-size-button">&lt;</button>
+                    <span id="current-size-display">20x20 (Padrão)</span>
+                    <button id="next-size-button">&gt;</button>
+                </div>
+            </div>
+
+            <div id="speed-block" class="control-block">
+                <h3>Velocidade Base</h3>
+                <div id="speed-controls" class="control-group">
+                    <button id="prev-speed-button">&lt;</button> 
+                    <span id="current-speed-display">1x (Padrão)</span>
+                    <button id="next-speed-button">&gt;</button>
+                </div>
+            </div>
+
+            <div class="control-block">
+                <h3>Cor da Cobra</h3>
+                <div id="color-controls" style="display: flex; align-items: center; justify-content: center;">
+                    <button id="prev-color-button">&lt;</button>
+                    <span id="current-color-display" style="font-size: 2.5em; margin: 0 15px;">🟨</span>
+                    <button id="next-color-button">&gt;</button>
+                </div>
+            </div>
+
+            <button id="close-speed-modal" style="background-color: #2ecc71; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 20px;">
+                Fechar
+            </button>
+        </div>
+    </div>
+
+    <div id="game-over-overlay">
+        <p id="record-break-message">NOVO RECORDE!</p> 
+        <p>GAME OVER!</p>
+        <p id="final-score"></p>
+        <p>Clique para jogar novamente</p> 
+    </div>
+
+    <script>
+        // --- VARIÁVEIS E CONSTANTES ---
+        const GAME_BOARD = document.getElementById('game-board');
+        const SCORE_BOARD_ELEMENT = document.getElementById('score-board'); 
+        const SCORE_VALUE_ELEMENT = document.getElementById('score-value');
+        const MESSAGE_BOX = document.getElementById('message');
+        const GAME_OVER_OVERLAY = document.getElementById('game-over-overlay'); 
+        const FINAL_SCORE_ELEMENT = document.getElementById('final-score'); 
+        const MODIFIER_BUTTON = document.getElementById('modifier-button'); 
+        const FULLSCREEN_BUTTON = document.getElementById('fullscreen-button'); 
+        const VOLUME_BUTTON = document.getElementById('volume-button'); 
+        const SPEED_OVERLAY = document.getElementById('speed-overlay');     
+        const CLOSE_SPEED_MODAL = document.getElementById('close-speed-modal'); 
+        
+        const FOOD_SOUND = document.getElementById('food-sound'); 
+        const SLIDE_SOUND = document.getElementById('slide-sound'); // NOVO: Som de deslize
+
+        const SPEED_BLOCK = document.getElementById('speed-block'); 
+        const CURRENT_SPEED_DISPLAY = document.getElementById('current-speed-display'); 
+        const PREV_SPEED_BUTTON = document.getElementById('prev-speed-button');   
+        const NEXT_SPEED_BUTTON = document.getElementById('next-speed-button');   
+        
+        const CURRENT_COLOR_DISPLAY = document.getElementById('current-color-display'); 
+        const PREV_COLOR_BUTTON = document.getElementById('prev-color-button');   
+        const NEXT_COLOR_BUTTON = document.getElementById('next-color-button'); 
+
+        const CURRENT_SIZE_DISPLAY = document.getElementById('current-size-display');
+        const PREV_SIZE_BUTTON = document.getElementById('prev-size-button');
+        const NEXT_SIZE_BUTTON = document.getElementById('next-size-button');
+
+        const CURRENT_MODE_DISPLAY = document.getElementById('current-mode-display');
+        const PREV_MODE_BUTTON = document.getElementById('prev-mode-button');
+        const NEXT_MODE_BUTTON = document.getElementById('next-mode-button');
+
+        const HIGH_SCORE_VALUE_ELEMENT = document.getElementById('high-score-value'); 
+        const NEW_RECORD_MESSAGE_ELEMENT = document.getElementById('new-record-message'); 
+        const RECORD_BREAK_MESSAGE_GAME_OVER = document.getElementById('record-break-message'); 
+        
+        const GAME_TITLE_ELEMENT = document.getElementById('game-title'); 
+
+        const BASE_INTERVAL_MS = 180; 
+        const SPEED_MULTIPLIERS = [0.5, 1, 1.5, 2, 2.5, 3]; 
+        const GRID_SIZES = [10, 20, 30, 40, 50]; 
+        const GAME_MODES = [
+            { name: "Mini Snake", index: 0 },
+            { name: "Snake Hell", index: 1 }
+        ];
+        
+        const HIGH_SCORE_KEY_MINI = 'miniSnakeHighScore';
+        const HIGH_SCORE_KEY_HELL = 'snakeHellHighScore';
+
+        // ESTADO
+        let gameLoopInterval = null; 
+        let currentIntervalMS = BASE_INTERVAL_MS; 
+        let activeMultiplierIndex = 1; 
+        let activeSizeIndex = 1; 
+        let activeModeIndex = 0; 
+        let gridSize = GRID_SIZES[activeSizeIndex]; 
+        let score = 0; 
+        let highScore = 0; 
+        let isNewRecord = false; 
+        let isGameOver = false;
+        
+        // ESTADO DO ÁUDIO
+        let isMuted = true; // Começa mudo
+        let audioHasBeenActivated = false; // Controle de ativação
+
+        const SNAKE_COLORS = [
+            { emoji: '🟨', css: '#f1c40f' }, 
+            { emoji: '🟥', css: '#e74c3c' },
+            { emoji: '🟧', css: '#e67e22' },
+            { emoji: '🟩', css: '#2ecc71' },
+            { emoji: '🟦', css: '#3498db' },
+            { emoji: '🟪', css: '#9b59b6' },
+            { emoji: '🟫', css: '#795548' },
+            { emoji: '⬛', css: '#2c3e50' },
+            { emoji: '⬜', css: '#ecf0f1' }
+        ];
+        let activeColorIndex = 0; 
+
+        let snake = []; 
+        let food = {}; 
+        let direction = { x: 0, y: 0 }; 
+        let newDirection = { x: 0, y: 0 }; 
+
+        // Swipe
+        let touchStartX = 0;
+        let touchStartY = 0;
+        const SWIPE_THRESHOLD = 30; 
+        
+        // --- FUNÇÕES DE ÁUDIO ---
+        
+        // Função para tocar o som da comida (verifica se está ativado e não mudo)
+        function playFoodSound() {
+            // Só toca se o áudio estiver liberado e o botão não estiver no modo mudo
+            if (FOOD_SOUND && audioHasBeenActivated && !isMuted) {
+                FOOD_SOUND.currentTime = 0; 
+                FOOD_SOUND.play().catch(error => {
+                    // Mantemos o erro no console (sem alerta) para fins de diagnóstico.
+                    console.error("Erro ao tocar o som da comida (após ativação):", error.name);
+                });
+            }
+        }
+        
+        // NOVO: Função para tocar o som de deslize
+        function playSlideSound() {
+            if (SLIDE_SOUND && audioHasBeenActivated && !isMuted) {
+                SLIDE_SOUND.currentTime = 0; 
+                SLIDE_SOUND.play().catch(error => {
+                    console.error("Erro ao tocar o som do slide:", error.name);
+                });
+            }
+        }
+
+        // Função que é chamada ao clicar no botão de volume
+        function toggleVolume() {
+            isMuted = !isMuted;
+            VOLUME_BUTTON.textContent = isMuted ? '🔇' : '🔈';
+
+            if (!isMuted) {
+                // Tenta desbloquear o áudio na primeira vez que o botão é ativado.
+                if (!audioHasBeenActivated && FOOD_SOUND) {
+                    FOOD_SOUND.muted = false; 
+                    
+                    // A maneira mais limpa de tentar o desbloqueio
+                    FOOD_SOUND.play()
+                        .then(() => {
+                            // Sucesso! Pausa e marca como ativado.
+                            FOOD_SOUND.pause();
+                            FOOD_SOUND.currentTime = 0;
+                            audioHasBeenActivated = true;
+                        })
+                        .catch(error => {
+                            // Em caso de falha, reverte o ícone para mudo e registra no console.
+                            console.error(`Falha ao liberar áudio no clique. Erro: ${error.name}. Verifique se a pasta 'Som' e 'Comida.mp3' estão no lugar correto.`);
+                            isMuted = true; 
+                            VOLUME_BUTTON.textContent = '🔇';
+                        });
+                }
+            } else {
+                // Se o usuário silenciar, pausamos.
+                FOOD_SOUND.pause();
+            }
+        }
+
+        // --- FUNÇÕES AUXILIARES DE RECORD ---
+        
+        function getActiveHighScoreKey() {
+            return GAME_MODES[activeModeIndex].name === "Snake Hell" 
+                ? HIGH_SCORE_KEY_HELL 
+                : HIGH_SCORE_KEY_MINI;
+        }
+
+        function loadHighScore() {
+            const key = getActiveHighScoreKey();
+            const savedScore = localStorage.getItem(key);
+            highScore = savedScore ? parseInt(savedScore) : 0;
+            HIGH_SCORE_VALUE_ELEMENT.textContent = highScore;
+        }
+
+        function saveHighScore(newScore) {
+            const key = getActiveHighScoreKey();
+            localStorage.setItem(key, newScore.toString());
+            highScore = newScore;
+            HIGH_SCORE_VALUE_ELEMENT.textContent = highScore;
+        }
+
+        function checkRecord() {
+            if (score > highScore) {
+                isNewRecord = true;
+                SCORE_BOARD_ELEMENT.classList.add('new-record');
+                NEW_RECORD_MESSAGE_ELEMENT.style.display = 'block';
+            } else {
+                isNewRecord = false;
+                SCORE_BOARD_ELEMENT.classList.remove('new-record');
+                NEW_RECORD_MESSAGE_ELEMENT.style.display = 'none';
+            }
+        }
+        
+        // --- FUNÇÕES AUXILIARES DE JOGO ---
+
+        function getRandomGridPosition() { 
+            const min = 2;
+            const max = gridSize - 1;
+            
+            if (gridSize < 3) return { x: 1, y: 1 }; 
+            
+            return { 
+                x: Math.floor(Math.random() * (max - min + 1)) + min, 
+                y: Math.floor(Math.random() * (max - min + 1)) + min
+            }; 
+        }
+
+        function placeFood() { 
+            let newFoodPosition; 
+            do { 
+                newFoodPosition = getRandomGridPosition(); 
+            } while (snake.some(segment => segment.x === newFoodPosition.x && segment.y === newFoodPosition.y)); 
+            food = newFoodPosition; 
+        }
+
+        function checkCollisions(head) { 
+            if (head.x < 1 || head.x > gridSize || head.y < 1 || head.y > gridSize) { 
+                gameOver(); 
+                return; 
+            } 
+            for (let i = 4; i < snake.length; i++) { 
+                if (head.x === snake[i].x && head.y === snake[i].y) { 
+                    gameOver(); 
+                    return; 
+                } 
+            } 
+        }
+
+        function handleKeyInput(e) { 
+            if (!gameLoopInterval && !isGameOver && (e.key.startsWith('Arrow'))) { 
+                startGameLoop(); 
+            } 
+            if (isGameOver) { 
+                if (e.key.startsWith('Arrow')) { resetGame(); } return; 
+            } 
+            
+            let nextX = direction.x; 
+            let nextY = direction.y; 
+            switch (e.key) { 
+                case 'ArrowUp': if (direction.y !== 1) { nextX = 0; nextY = -1; } break; 
+                case 'ArrowDown': if (direction.y !== -1) { nextX = 0; nextY = 1; } break; 
+                case 'ArrowLeft': if (direction.x !== 1) { nextX = -1; nextY = 0; } break; 
+                case 'ArrowRight': if (direction.x !== -1) { nextX = 1; nextY = 0; } break; 
+                default: return; 
+            } 
+            
+            // NOVO: Verifica se a direção realmente mudou antes de atualizar e tocar o som
+            if (nextX !== direction.x || nextY !== direction.y) {
+                 playSlideSound(); 
+            }
+            
+            newDirection = { x: nextX, y: nextY }; 
+        }
+        
+        function handleTouchStart(e) { e.preventDefault(); touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }
+        function handleTouchMove(e) { e.preventDefault(); }
+        
+        function handleTouchEnd(e) { 
+            e.preventDefault(); 
+            if (isGameOver) { return; } 
+            
+            if (!gameLoopInterval) { 
+                startGameLoop(); 
+            } 
+            
+            const touchEndX = e.changedTouches[0].clientX; 
+            const touchEndY = e.changedTouches[0].clientY; 
+            const diffX = touchEndX - touchStartX; 
+            const diffY = touchEndY - touchStartY; 
+            let nextX = direction.x; 
+            let nextY = direction.y; 
+            
+            if (Math.abs(diffX) > Math.abs(diffY)) { 
+                if (Math.abs(diffX) > SWIPE_THRESHOLD) { 
+                    if (diffX > 0) { if (direction.x !== -1) { nextX = 1; nextY = 0; } } else { if (direction.x !== 1) { nextX = -1; nextY = 0; } } 
+                } 
+            } else { 
+                if (Math.abs(diffY) > SWIPE_THRESHOLD) { 
+                    if (diffY > 0) { if (direction.y !== -1) { nextX = 0; nextY = 1; } } else { if (direction.y !== 1) { nextX = 0; nextY = -1; } } 
+                } 
+            } 
+            
+            // NOVO: Verifica se a direção realmente mudou antes de atualizar e tocar o som
+            if (nextX !== direction.x || nextY !== direction.y) {
+                 playSlideSound(); 
+            }
+
+            newDirection = { x: nextX, y: nextY }; 
+        }
+
+        // --- FUNÇÕES DE LÓGICA DO JOGO E RENDERIZAÇÃO ---
+        
+        function drawGame() {
+            GAME_BOARD.innerHTML = '';
+
+            const snakeColor = SNAKE_COLORS[activeColorIndex].css; 
+            
+            snake.forEach(segment => {
+                const snakeElement = document.createElement('div');
+                snakeElement.style.gridRowStart = segment.y;
+                snakeElement.style.gridColumnStart = segment.x;
+                snakeElement.classList.add('snake');
+                snakeElement.style.backgroundColor = snakeColor; 
+                GAME_BOARD.appendChild(snakeElement);
+            });
+
+            const foodElement = document.createElement('div');
+            foodElement.style.gridRowStart = food.y;
+            foodElement.style.gridColumnStart = food.x;
+            foodElement.classList.add('food');
+            GAME_BOARD.appendChild(foodElement);
+
+            SCORE_VALUE_ELEMENT.textContent = score;
+            checkRecord(); 
+        }
+
+        function updateGame() {
+            if (isGameOver) return;
+
+            direction = newDirection;
+            if (direction.x === 0 && direction.y === 0) { return; }
+
+            const newHead = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+            snake.unshift(newHead);
+
+            if (newHead.x === food.x && newHead.y === food.y) {
+                playFoodSound(); 
+                
+                score += 1; 
+                placeFood(); 
+                
+                if (GAME_MODES[activeModeIndex].name === "Mini Snake") {
+                    if (SPEED_MULTIPLIERS[activeMultiplierIndex] === 1) { 
+                        increaseSpeedMiniSnake();
+                    }
+                } else { 
+                    snake.pop(); 
+                    increaseSpeedSnakeHell();
+                }
+
+            } else {
+                snake.pop(); 
+            }
+
+            checkCollisions(newHead);
+            drawGame();
+        }
+
+        function increaseSpeedMiniSnake() {
+            if (score > 0 && score % 5 === 0) {
+                if (currentIntervalMS > 50) { 
+                    currentIntervalMS -= 10; 
+                    clearInterval(gameLoopInterval);
+                    startGameLoop(); 
+                }
+            }
+        }
+        
+        function increaseSpeedSnakeHell() {
+            if (currentIntervalMS > 40) { 
+                currentIntervalMS -= 3; 
+                clearInterval(gameLoopInterval);
+                startGameLoop(); 
+            }
+        }
+
+        function startGameLoop() {
+            gameLoopInterval = setInterval(updateGame, currentIntervalMS);
+            MESSAGE_BOX.textContent = `Jogo em andamento!`; 
+            updateModifierButtonState(); 
+        }
+
+        function gameOver() { 
+            isGameOver = true; 
+            clearInterval(gameLoopInterval); 
+            gameLoopInterval = null; 
+            MESSAGE_BOX.textContent = ""; 
+
+            if (isNewRecord) {
+                saveHighScore(score);
+                RECORD_BREAK_MESSAGE_GAME_OVER.style.display = 'block';
+                NEW_RECORD_MESSAGE_ELEMENT.style.display = 'none'; 
+            }
+
+            FINAL_SCORE_ELEMENT.innerHTML = `<span id="score-icon">🔴</span>${score}`; 
+            GAME_OVER_OVERLAY.style.display = 'flex'; 
+            updateModifierButtonState(); 
+            removeInputListeners(); 
+        }
+
+
+        // --- FUNÇÕES DE ESTADO E INICIALIZAÇÃO ---
+
+        function updateModeDisplay() {
+            const mode = GAME_MODES[activeModeIndex];
+            const text = mode.index === 0 ? `${mode.name} (Padrão)` : mode.name;
+            CURRENT_MODE_DISPLAY.textContent = text;
+            
+            GAME_TITLE_ELEMENT.textContent = mode.name; 
+            
+            const isSnakeHell = mode.name === "Snake Hell";
+            if (isSnakeHell) {
+                SPEED_BLOCK.classList.add('disabled');
+                GAME_BOARD.classList.add('snake-hell-border'); 
+            } else {
+                SPEED_BLOCK.classList.remove('disabled');
+                GAME_BOARD.classList.remove('snake-hell-border'); 
+            }
+            PREV_MODE_BUTTON.disabled = activeModeIndex === 0;
+            NEXT_MODE_BUTTON.disabled = activeModeIndex === GAME_MODES.length - 1;
+        }
+
+        function applySelectedMode() {
+            updateModeDisplay();
+            resetGame(); 
+        }
+
+        function goToPrevMode() { if (activeModeIndex > 0) { activeModeIndex--; applySelectedMode(); } }
+        function goToNextMode() { if (activeModeIndex < GAME_MODES.length - 1) { activeModeIndex++; applySelectedMode(); } }
+
+        function updateSpeedDisplay() {
+            const multiplier = SPEED_MULTIPLIERS[activeMultiplierIndex];
+            let text = multiplier === 1 ? '1x (Padrão)' : (multiplier === 0.5 ? '0.50x (Lento)' : `${multiplier}x`);
+            CURRENT_SPEED_DISPLAY.textContent = text;
+            PREV_SPEED_BUTTON.disabled = activeMultiplierIndex === 0;
+            NEXT_SPEED_BUTTON.disabled = activeMultiplierIndex === SPEED_MULTIPLIERS.length - 1;
+        }
+
+        function applySelectedSpeed() {
+            if (GAME_MODES[activeModeIndex].name !== "Snake Hell") {
+                const multiplier = SPEED_MULTIPLIERS[activeMultiplierIndex];
+                currentIntervalMS = BASE_INTERVAL_MS / multiplier; 
+            }
+            updateSpeedDisplay(); 
+        }
+
+        function goToPrevSpeed() { if (activeMultiplierIndex > 0) { activeMultiplierIndex--; applySelectedSpeed(); } }
+        function goToNextSpeed() { if (activeMultiplierIndex < SPEED_MULTIPLIERS.length - 1) { activeMultiplierIndex++; applySelectedSpeed(); } }
+        
+        function updateSizeDisplay() {
+            const size = GRID_SIZES[activeSizeIndex];
+            const text = size === 20 ? `${size}x${size} (Padrão)` : `${size}x${size}`;
+            CURRENT_SIZE_DISPLAY.textContent = text;
+            PREV_SIZE_BUTTON.disabled = activeSizeIndex === 0;
+            NEXT_SIZE_BUTTON.disabled = activeSizeIndex === GRID_SIZES.length - 1;
+        }
+
+        function applySelectedSize() {
+            gridSize = GRID_SIZES[activeSizeIndex];
+            updateSizeDisplay();
+            resetGame(); 
+        }
+
+        function goToPrevSize() { if (activeSizeIndex > 0) { activeSizeIndex--; applySelectedSize(); } }
+        function goToNextSize() { if (activeSizeIndex < GRID_SIZES.length - 1) { activeSizeIndex++; applySelectedSize(); } }
+        
+        function updateColorDisplay() {
+            const color = SNAKE_COLORS[activeColorIndex];
+            CURRENT_COLOR_DISPLAY.textContent = color.emoji;
+            PREV_COLOR_BUTTON.disabled = activeColorIndex === 0;
+            NEXT_COLOR_BUTTON.disabled = activeColorIndex === SNAKE_COLORS.length - 1;
+            drawGame();
+        }
+        
+        function goToPrevColor() { if (activeColorIndex > 0) { activeColorIndex--; updateColorDisplay(); } }
+        function goToNextColor() { if (activeColorIndex < SNAKE_COLORS.length - 1) { activeColorIndex++; updateColorDisplay(); } }
+        
+        function updateModifierButtonState() {
+            MODIFIER_BUTTON.disabled = gameLoopInterval !== null;
+        }
+        
+        // --- FUNÇÕES DE EVENT LISTENERS (INPUT) ---
+        function removeInputListeners() {
+            document.removeEventListener('keydown', handleKeyInput); 
+            GAME_BOARD.removeEventListener('touchstart', handleTouchStart, false);
+            GAME_BOARD.removeEventListener('touchmove', handleTouchMove, false);
+            GAME_BOARD.removeEventListener('touchend', handleTouchEnd, false);
+        }
+
+        function addInputListeners() {
+            document.addEventListener('keydown', handleKeyInput); 
+            GAME_BOARD.addEventListener('touchstart', handleTouchStart, false);
+            GAME_BOARD.addEventListener('touchmove', handleTouchMove, false);
+            GAME_BOARD.addEventListener('touchend', handleTouchEnd, false);
+        }
+        
+        function setupGame() {
+            removeInputListeners(); 
+            addInputListeners();
+            
+            const boardSize = Math.min(window.innerWidth - 40, window.innerHeight - 200);
+            GAME_BOARD.style.width = `${boardSize}px`;
+            GAME_BOARD.style.height = `${boardSize}px`;
+            
+            const currentCellSize = boardSize / gridSize; 
+            GAME_BOARD.style.gridTemplateColumns = `repeat(${gridSize}, ${currentCellSize}px)`;
+            GAME_BOARD.style.gridTemplateRows = `repeat(${gridSize}, ${currentCellSize}px)`;
+            
+            placeFood();
+            
+            loadHighScore(); 
+            
+            updateModeDisplay(); 
+            updateSizeDisplay(); 
+            updateSpeedDisplay(); 
+            updateColorDisplay(); 
+            updateModifierButtonState(); 
+            drawGame(); 
+        }
+
+        function resetGame() {
+            if (gameLoopInterval) {
+                clearInterval(gameLoopInterval);
+                gameLoopInterval = null;
+            }
+
+            GAME_OVER_OVERLAY.style.display = 'none';
+            RECORD_BREAK_MESSAGE_GAME_OVER.style.display = 'none'; 
+            isGameOver = false;
+            score = 0;
+            isNewRecord = false;
+            
+            SCORE_BOARD_ELEMENT.classList.remove('new-record'); 
+            NEW_RECORD_MESSAGE_ELEMENT.style.display = 'none';
+            
+            const center = Math.floor(gridSize / 2) + 1;
+            
+            if (GAME_MODES[activeModeIndex].name === "Snake Hell") {
+                currentIntervalMS = 120; 
+                snake = [
+                    { x: center, y: center },
+                    { x: center - 1, y: center },
+                    { x: center - 2, y: center } 
+                ];
+            } else {
+                applySelectedSpeed(); 
+                snake = [{ x: center, y: center }]; 
+            }
+
+            direction = { x: 0, y: 0 };
+            newDirection = { x: 0, y: 0 };
+            MESSAGE_BOX.textContent = `Pressione as setas (desktop) ou arraste a tela (celular) para começar!`;
+
+            setupGame(); 
+        }
+
+        // --- FUNÇÃO PARA TELA CHEIA MANUAL ---
+        function toggleFullscreen() {
+            const element = document.documentElement; 
+            
+            if (document.fullscreenElement) {
+                // Sair do modo tela cheia
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) { 
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) { 
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { 
+                    document.msExitFullscreen();
+                }
+            } else {
+                // Entrar no modo tela cheia
+                if (element.requestFullscreen) {
+                    element.requestFullscreen();
+                } else if (element.mozRequestFullScreen) { 
+                    element.mozRequestFullScreen();
+                } else if (element.webkitRequestFullscreen) { 
+                    element.webkitRequestFullscreen();
+                } else if (element.msRequestFullscreen) { 
+                    element.msRequestFullscreen();
+                }
+            }
+        }
+
+        // --- INICIALIZAÇÃO ÚNICA DE LISTENERS DE MODAL/REINÍCIO ---
+
+        function initializeGlobalListeners() {
+            PREV_MODE_BUTTON.addEventListener('click', goToPrevMode);
+            NEXT_MODE_BUTTON.addEventListener('click', goToNextMode);
+            PREV_SPEED_BUTTON.addEventListener('click', goToPrevSpeed);
+            NEXT_SPEED_BUTTON.addEventListener('click', goToNextSpeed);
+            PREV_SIZE_BUTTON.addEventListener('click', goToPrevSize); 
+            NEXT_SIZE_BUTTON.addEventListener('click', goToNextSize); 
+            PREV_COLOR_BUTTON.addEventListener('click', goToPrevColor);
+            NEXT_COLOR_BUTTON.addEventListener('click', goToNextColor);
+            
+            MODIFIER_BUTTON.addEventListener('click', () => {
+                if (MODIFIER_BUTTON.disabled) return; 
+                SPEED_OVERLAY.style.display = 'flex';
+            });
+            
+            // Listener para o botão de volume
+            VOLUME_BUTTON.addEventListener('click', toggleVolume);
+
+            FULLSCREEN_BUTTON.addEventListener('click', toggleFullscreen); 
+            
+            SPEED_OVERLAY.addEventListener('click', (e) => {
+                if (e.target.classList.contains('overlay')) {
+                    SPEED_OVERLAY.style.display = 'none';
+                }
+            });
+            CLOSE_SPEED_MODAL.addEventListener('click', () => {
+                SPEED_OVERLAY.style.display = 'none';
+            });
+
+            window.addEventListener('resize', resetGame); 
+            GAME_OVER_OVERLAY.addEventListener('click', resetGame);
+            GAME_OVER_OVERLAY.addEventListener('touchend', resetGame);
+        }
+        
+        // --- FUNÇÃO PRINCIPAL DE INÍCIO ---
+        function init() {
+            initializeGlobalListeners();
+            resetGame();
+        }
+        
+        window.onload = init;
+    </script>
+</body>
+</html>
