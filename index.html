@@ -13,28 +13,31 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #2c3e50; 
-            color: #ecf0f1; 
+            background-color: #2c3e50;
+            color: #ecf0f1;
             font-family: 'Arial', sans-serif;
-            overflow: hidden; 
+            overflow: hidden;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             position: relative; 
         }
 
         #game-board {
-            border: 5px solid #27ae60; /* Cor padrão verde */
+            border: 5px solid #27ae60;
             background-color: #34495e; 
             display: grid;
             touch-action: none;
             min-width: 200px; 
             min-height: 200px;
-            transition: border-color 0.3s ease-in-out; /* Transição suave */
+            /* LIMITE PARA TELAS GRANDES (Responsividade) */
+            max-width: 600px; 
+            max-height: 600px;
+            transition: border-color 0.3s ease-in-out; 
         }
 
         /* CLASSE PARA BORDA DE SNAKE HELL */
         #game-board.snake-hell-border {
-            border-color: #ff6b6b; /* Vermelho claro */
+            border-color: #ff6b6b;
         }
 
         .snake {
@@ -99,7 +102,7 @@
             text-align: center;
         }
         
-        /* Botões Modificador, Volume e Fullscreen */
+        /* Botões Modificador e Volume */
         .game-control-button {
             position: absolute;
             bottom: 20px;
@@ -119,17 +122,9 @@
             background-color: #3498db; 
         }
         
-        /* Novo estilo para o botão de volume */
         #volume-button {
-            right: 100px; /* Posiciona à esquerda do Fullscreen */
-            background-color: #9b59b6; /* Cor roxa */
-            font-size: 1.5em; 
-            line-height: 1;
-        }
-
-        #fullscreen-button {
-            right: 20px;
-            background-color: #2ecc71; 
+            right: 20px; 
+            background-color: #9b59b6; 
             font-size: 1.5em; 
             line-height: 1;
         }
@@ -248,10 +243,16 @@
     
     <button id="volume-button" class="game-control-button" aria-label="Ativar/Desativar Som">🔇</button>
 
-    <button id="fullscreen-button" class="game-control-button" aria-label="Tela Cheia">⛶</button>
     
-    <audio id="food-sound" src="Som/Comida.mp3" preload="auto"></audio>
-    <audio id="slide-sound" src="Som/Slide.mp3" preload="auto"></audio>
+    <audio id="food-sound" preload="auto">
+        <source src="assets/Comida.m4a" type="audio/mp4">
+        <source src="assets/Comida.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="slide-sound" preload="auto">
+        <source src="assets/Slide.mp3" type="audio/mpeg">
+    </audio>
+
 
     <div id="speed-overlay" class="overlay">
         <div class="modal">
@@ -315,13 +316,13 @@
         const GAME_OVER_OVERLAY = document.getElementById('game-over-overlay'); 
         const FINAL_SCORE_ELEMENT = document.getElementById('final-score'); 
         const MODIFIER_BUTTON = document.getElementById('modifier-button'); 
-        const FULLSCREEN_BUTTON = document.getElementById('fullscreen-button'); 
         const VOLUME_BUTTON = document.getElementById('volume-button'); 
         const SPEED_OVERLAY = document.getElementById('speed-overlay');     
         const CLOSE_SPEED_MODAL = document.getElementById('close-speed-modal'); 
         
+        // As referências aqui são IDs, e não o SRC. Está correto.
         const FOOD_SOUND = document.getElementById('food-sound'); 
-        const SLIDE_SOUND = document.getElementById('slide-sound'); // NOVO: Som de deslize
+        const SLIDE_SOUND = document.getElementById('slide-sound'); 
 
         const SPEED_BLOCK = document.getElementById('speed-block'); 
         const CURRENT_SPEED_DISPLAY = document.getElementById('current-speed-display'); 
@@ -370,8 +371,8 @@
         let isGameOver = false;
         
         // ESTADO DO ÁUDIO
-        let isMuted = true; // Começa mudo
-        let audioHasBeenActivated = false; // Controle de ativação
+        let isMuted = true; 
+        let audioHasBeenActivated = false; 
 
         const SNAKE_COLORS = [
             { emoji: '🟨', css: '#f1c40f' }, 
@@ -398,56 +399,47 @@
         
         // --- FUNÇÕES DE ÁUDIO ---
         
-        // Função para tocar o som da comida (verifica se está ativado e não mudo)
         function playFoodSound() {
-            // Só toca se o áudio estiver liberado e o botão não estiver no modo mudo
             if (FOOD_SOUND && audioHasBeenActivated && !isMuted) {
                 FOOD_SOUND.currentTime = 0; 
                 FOOD_SOUND.play().catch(error => {
-                    // Mantemos o erro no console (sem alerta) para fins de diagnóstico.
-                    console.error("Erro ao tocar o som da comida (após ativação):", error.name);
+                    // O catch é essencial para evitar erros no console do WebView
                 });
             }
         }
         
-        // NOVO: Função para tocar o som de deslize
         function playSlideSound() {
             if (SLIDE_SOUND && audioHasBeenActivated && !isMuted) {
                 SLIDE_SOUND.currentTime = 0; 
                 SLIDE_SOUND.play().catch(error => {
-                    console.error("Erro ao tocar o som do slide:", error.name);
+                    // O catch é essencial para evitar erros no console do WebView
                 });
             }
         }
 
-        // Função que é chamada ao clicar no botão de volume
         function toggleVolume() {
             isMuted = !isMuted;
             VOLUME_BUTTON.textContent = isMuted ? '🔇' : '🔈';
 
             if (!isMuted) {
-                // Tenta desbloquear o áudio na primeira vez que o botão é ativado.
                 if (!audioHasBeenActivated && FOOD_SOUND) {
                     FOOD_SOUND.muted = false; 
                     
-                    // A maneira mais limpa de tentar o desbloqueio
                     FOOD_SOUND.play()
                         .then(() => {
-                            // Sucesso! Pausa e marca como ativado.
                             FOOD_SOUND.pause();
                             FOOD_SOUND.currentTime = 0;
                             audioHasBeenActivated = true;
                         })
                         .catch(error => {
-                            // Em caso de falha, reverte o ícone para mudo e registra no console.
-                            console.error(`Falha ao liberar áudio no clique. Erro: ${error.name}. Verifique se a pasta 'Som' e 'Comida.mp3' estão no lugar correto.`);
+                            console.error(`Falha ao liberar áudio no clique. Erro: ${error.name}.`);
                             isMuted = true; 
                             VOLUME_BUTTON.textContent = '🔇';
                         });
                 }
             } else {
-                // Se o usuário silenciar, pausamos.
                 FOOD_SOUND.pause();
+                SLIDE_SOUND.pause();
             }
         }
 
@@ -538,7 +530,6 @@
                 default: return; 
             } 
             
-            // NOVO: Verifica se a direção realmente mudou antes de atualizar e tocar o som
             if (nextX !== direction.x || nextY !== direction.y) {
                  playSlideSound(); 
             }
@@ -574,7 +565,6 @@
                 } 
             } 
             
-            // NOVO: Verifica se a direção realmente mudou antes de atualizar e tocar o som
             if (nextX !== direction.x || nextY !== direction.y) {
                  playSlideSound(); 
             }
@@ -782,7 +772,7 @@
             removeInputListeners(); 
             addInputListeners();
             
-            const boardSize = Math.min(window.innerWidth - 40, window.innerHeight - 200);
+            const boardSize = Math.min(window.innerWidth - 40, window.innerHeight - 200, 600); 
             GAME_BOARD.style.width = `${boardSize}px`;
             GAME_BOARD.style.height = `${boardSize}px`;
             
@@ -838,35 +828,6 @@
             setupGame(); 
         }
 
-        // --- FUNÇÃO PARA TELA CHEIA MANUAL ---
-        function toggleFullscreen() {
-            const element = document.documentElement; 
-            
-            if (document.fullscreenElement) {
-                // Sair do modo tela cheia
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.mozCancelFullScreen) { 
-                    document.mozCancelFullScreen();
-                } else if (document.webkitExitFullscreen) { 
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) { 
-                    document.msExitFullscreen();
-                }
-            } else {
-                // Entrar no modo tela cheia
-                if (element.requestFullscreen) {
-                    element.requestFullscreen();
-                } else if (element.mozRequestFullScreen) { 
-                    element.mozRequestFullScreen();
-                } else if (element.webkitRequestFullscreen) { 
-                    element.webkitRequestFullscreen();
-                } else if (element.msRequestFullscreen) { 
-                    element.msRequestFullscreen();
-                }
-            }
-        }
-
         // --- INICIALIZAÇÃO ÚNICA DE LISTENERS DE MODAL/REINÍCIO ---
 
         function initializeGlobalListeners() {
@@ -884,10 +845,7 @@
                 SPEED_OVERLAY.style.display = 'flex';
             });
             
-            // Listener para o botão de volume
             VOLUME_BUTTON.addEventListener('click', toggleVolume);
-
-            FULLSCREEN_BUTTON.addEventListener('click', toggleFullscreen); 
             
             SPEED_OVERLAY.addEventListener('click', (e) => {
                 if (e.target.classList.contains('overlay')) {
