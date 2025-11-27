@@ -245,12 +245,12 @@
 
     
     <audio id="food-sound" preload="auto">
-        <source src="assets/Comida.m4a" type="audio/mp4">
-        <source src="assets/Comida.mp3" type="audio/mpeg">
+        <source src="Comida.m4a" type="audio/mp4">
+        <source src="Comida.mp3" type="audio/mpeg">
     </audio>
 
     <audio id="slide-sound" preload="auto">
-        <source src="assets/Slide.mp3" type="audio/mpeg">
+        <source src="Slide.mp3" type="audio/mpeg">
     </audio>
 
 
@@ -511,8 +511,6 @@
             } 
         }
         
-        /* CÓDIGO handleKeyInput EXCLUÍDO AQUI */
-        
         function handleTouchStart(e) { e.preventDefault(); touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }
         function handleTouchMove(e) { e.preventDefault(); }
         
@@ -732,14 +730,14 @@
         
         // --- FUNÇÕES DE EVENT LISTENERS (INPUT) ---
         function removeInputListeners() {
-            // document.removeEventListener('keydown', handleKeyInput); <--- REMOVIDO
+            // Document.removeEventListener('keydown', handleKeyInput) foi removido
             GAME_BOARD.removeEventListener('touchstart', handleTouchStart, false);
             GAME_BOARD.removeEventListener('touchmove', handleTouchMove, false);
             GAME_BOARD.removeEventListener('touchend', handleTouchEnd, false);
         }
 
         function addInputListeners() {
-            // document.addEventListener('keydown', handleKeyInput); <--- REMOVIDO
+            // Document.addEventListener('keydown', handleKeyInput) foi removido
             GAME_BOARD.addEventListener('touchstart', handleTouchStart, false);
             GAME_BOARD.addEventListener('touchmove', handleTouchMove, false);
             GAME_BOARD.addEventListener('touchend', handleTouchEnd, false);
@@ -800,7 +798,6 @@
 
             direction = { x: 0, y: 0 };
             newDirection = { x: 0, y: 0 };
-            // TEXTO MUDADO PARA APENAS MOBILE
             MESSAGE_BOX.textContent = `Arraste a tela para começar!`;
 
             setupGame(); 
@@ -838,8 +835,7 @@
             GAME_OVER_OVERLAY.addEventListener('click', resetGame);
             GAME_OVER_OVERLAY.addEventListener('touchend', resetGame);
         }
-
-                    
+        
         // --- FUNÇÃO PRINCIPAL DE INÍCIO ---
         function init() {
             initializeGlobalListeners();
@@ -849,4 +845,4 @@
         window.onload = init;
     </script>
 </body>
-</html> 
+</html>
