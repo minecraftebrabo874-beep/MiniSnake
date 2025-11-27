@@ -415,28 +415,36 @@
                 });
             }
         }
-
+        
+        // FUNÇÃO TOGGLE VOLUME CORRIGIDA PARA DESBLOQUEAR O ÁUDIO MOBILE
         function toggleVolume() {
             isMuted = !isMuted;
             VOLUME_BUTTON.textContent = isMuted ? '🔇' : '🔈';
 
             if (!isMuted) {
-                if (!audioHasBeenActivated && FOOD_SOUND) {
+                // Tenta liberar o contexto de áudio na primeira vez
+                if (!audioHasBeenActivated && FOOD_SOUND && SLIDE_SOUND) {
                     FOOD_SOUND.muted = false; 
-                    
+                    SLIDE_SOUND.muted = false; // Garante que o Slide também está disponível
+
+                    // Usa o FOOD_SOUND para tentar o desbloqueio, mas afeta o contexto global
                     FOOD_SOUND.play()
                         .then(() => {
+                            // Desbloqueio bem-sucedido: pausa e marca como ativo
                             FOOD_SOUND.pause();
                             FOOD_SOUND.currentTime = 0;
+                            SLIDE_SOUND.pause();
                             audioHasBeenActivated = true;
                         })
                         .catch(error => {
-                            console.error(`Falha ao liberar áudio no clique. Erro: ${error.name}.`);
+                            // Se falhar (o que é raro aqui), volta para mudo
+                            console.error(`Falha ao liberar áudio. Erro: ${error.name}.`);
                             isMuted = true; 
                             VOLUME_BUTTON.textContent = '🔇';
                         });
                 }
             } else {
+                // MUTE
                 FOOD_SOUND.pause();
                 SLIDE_SOUND.pause();
             }
@@ -730,14 +738,12 @@
         
         // --- FUNÇÕES DE EVENT LISTENERS (INPUT) ---
         function removeInputListeners() {
-            // Document.removeEventListener('keydown', handleKeyInput) foi removido
             GAME_BOARD.removeEventListener('touchstart', handleTouchStart, false);
             GAME_BOARD.removeEventListener('touchmove', handleTouchMove, false);
             GAME_BOARD.removeEventListener('touchend', handleTouchEnd, false);
         }
 
         function addInputListeners() {
-            // Document.addEventListener('keydown', handleKeyInput) foi removido
             GAME_BOARD.addEventListener('touchstart', handleTouchStart, false);
             GAME_BOARD.addEventListener('touchmove', handleTouchMove, false);
             GAME_BOARD.addEventListener('touchend', handleTouchEnd, false);
