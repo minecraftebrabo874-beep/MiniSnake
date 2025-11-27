@@ -237,7 +237,7 @@
 
     <h1 id="game-title">Mini Snake</h1> 
     <div id="game-board"></div>
-    <div id="message">Pressione as setas (desktop) ou arraste a tela (celular) para começar!</div>
+    <div id="message">Arraste a tela para começar!</div>
 
     <button id="modifier-button" class="game-control-button">Modificadores</button>
     
@@ -320,7 +320,6 @@
         const SPEED_OVERLAY = document.getElementById('speed-overlay');     
         const CLOSE_SPEED_MODAL = document.getElementById('close-speed-modal'); 
         
-        // As referências aqui são IDs, e não o SRC. Está correto.
         const FOOD_SOUND = document.getElementById('food-sound'); 
         const SLIDE_SOUND = document.getElementById('slide-sound'); 
 
@@ -511,31 +510,8 @@
                 } 
             } 
         }
-
-        function handleKeyInput(e) { 
-            if (!gameLoopInterval && !isGameOver && (e.key.startsWith('Arrow'))) { 
-                startGameLoop(); 
-            } 
-            if (isGameOver) { 
-                if (e.key.startsWith('Arrow')) { resetGame(); } return; 
-            } 
-            
-            let nextX = direction.x; 
-            let nextY = direction.y; 
-            switch (e.key) { 
-                case 'ArrowUp': if (direction.y !== 1) { nextX = 0; nextY = -1; } break; 
-                case 'ArrowDown': if (direction.y !== -1) { nextX = 0; nextY = 1; } break; 
-                case 'ArrowLeft': if (direction.x !== 1) { nextX = -1; nextY = 0; } break; 
-                case 'ArrowRight': if (direction.x !== -1) { nextX = 1; nextY = 0; } break; 
-                default: return; 
-            } 
-            
-            if (nextX !== direction.x || nextY !== direction.y) {
-                 playSlideSound(); 
-            }
-            
-            newDirection = { x: nextX, y: nextY }; 
-        }
+        
+        /* CÓDIGO handleKeyInput EXCLUÍDO AQUI */
         
         function handleTouchStart(e) { e.preventDefault(); touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }
         function handleTouchMove(e) { e.preventDefault(); }
@@ -555,6 +531,7 @@
             let nextX = direction.x; 
             let nextY = direction.y; 
             
+            // Prioriza o eixo com maior diferença de movimento
             if (Math.abs(diffX) > Math.abs(diffY)) { 
                 if (Math.abs(diffX) > SWIPE_THRESHOLD) { 
                     if (diffX > 0) { if (direction.x !== -1) { nextX = 1; nextY = 0; } } else { if (direction.x !== 1) { nextX = -1; nextY = 0; } } 
@@ -755,14 +732,14 @@
         
         // --- FUNÇÕES DE EVENT LISTENERS (INPUT) ---
         function removeInputListeners() {
-            document.removeEventListener('keydown', handleKeyInput); 
+            // document.removeEventListener('keydown', handleKeyInput); <--- REMOVIDO
             GAME_BOARD.removeEventListener('touchstart', handleTouchStart, false);
             GAME_BOARD.removeEventListener('touchmove', handleTouchMove, false);
             GAME_BOARD.removeEventListener('touchend', handleTouchEnd, false);
         }
 
         function addInputListeners() {
-            document.addEventListener('keydown', handleKeyInput); 
+            // document.addEventListener('keydown', handleKeyInput); <--- REMOVIDO
             GAME_BOARD.addEventListener('touchstart', handleTouchStart, false);
             GAME_BOARD.addEventListener('touchmove', handleTouchMove, false);
             GAME_BOARD.addEventListener('touchend', handleTouchEnd, false);
@@ -823,7 +800,8 @@
 
             direction = { x: 0, y: 0 };
             newDirection = { x: 0, y: 0 };
-            MESSAGE_BOX.textContent = `Pressione as setas (desktop) ou arraste a tela (celular) para começar!`;
+            // TEXTO MUDADO PARA APENAS MOBILE
+            MESSAGE_BOX.textContent = `Arraste a tela para começar!`;
 
             setupGame(); 
         }
@@ -860,7 +838,8 @@
             GAME_OVER_OVERLAY.addEventListener('click', resetGame);
             GAME_OVER_OVERLAY.addEventListener('touchend', resetGame);
         }
-        
+
+                    
         // --- FUNÇÃO PRINCIPAL DE INÍCIO ---
         function init() {
             initializeGlobalListeners();
@@ -870,4 +849,4 @@
         window.onload = init;
     </script>
 </body>
-</html>
+</html> 
