@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Mini Snake / Snake Hell</title>
     <style>
-        /* --- ESTILOS CSS --- */
         body {
             display: flex;
             flex-direction: column;
@@ -13,13 +12,32 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #2c3e50;
-            color: #ecf0f1;
+            background-color: #2c3e50; 
+            color: #ecf0f1; 
             font-family: 'Arial', sans-serif;
             overflow: hidden;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             position: relative; 
+        }
+
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; 
+            transition: opacity 0.5s ease-out; 
+        }
+
+        #splash-screen img {
+            width: 80%; 
+            max-width: 300px;
         }
 
         #game-board {
@@ -29,13 +47,11 @@
             touch-action: none;
             min-width: 200px; 
             min-height: 200px;
-            /* LIMITE PARA TELAS GRANDES (Responsividade) */
             max-width: 600px; 
             max-height: 600px;
             transition: border-color 0.3s ease-in-out; 
         }
 
-        /* CLASSE PARA BORDA DE SNAKE HELL */
         #game-board.snake-hell-border {
             border-color: #ff6b6b;
         }
@@ -47,17 +63,36 @@
                 grid-row-start 0.18s linear, 
                 grid-column-start 0.18s linear;
         }
+        
+        .snake-head {
+            position: relative;
+            overflow: hidden; 
+        }
+        
+        .snake-head .eyes {
+            position: absolute;
+            top: 0; 
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 125%; /* Tamanho médio para os olhos */
+            line-height: 1;
+            transition: transform 0.18s linear; /* Transição suave para o flip */
+        }
 
         .food {
             background-color: #e74c3c; 
             border-radius: 50%; 
         }
 
-        /* Score e High Score */
         #score-board {
             position: absolute; 
             top: 10px;          
-            left: 10px;         
+            left: 10px; 
+            right: auto;
             padding: 5px 10px;
             font-size: 1.5em;
             font-weight: bold;
@@ -65,6 +100,7 @@
             border-radius: 5px;
             z-index: 50; 
             transition: color 0.3s; 
+            color: #ecf0f1; 
         }
         #score-board.new-record {
             color: #f1c40f; 
@@ -72,19 +108,22 @@
 
         #high-score-board { 
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 50px; 
+            left: 10px; 
+            right: auto;
             padding: 5px 10px;
             font-size: 1.2em;
             font-weight: bold;
             background-color: rgba(0, 0, 0, 0.4);
             border-radius: 5px;
             z-index: 50;
+            color: #ecf0f1; 
         }
         #new-record-message { 
             position: absolute;
-            top: 50px; 
-            right: 10px;
+            top: 90px; 
+            left: 10px; 
+            right: auto;
             padding: 5px 10px;
             font-size: 1.2em;
             font-weight: bold;
@@ -102,10 +141,8 @@
             text-align: center;
         }
         
-        /* Botões Modificador e Volume */
         .game-control-button {
             position: absolute;
-            bottom: 20px;
             padding: 10px 15px;
             font-size: 1em;
             color: white;
@@ -117,25 +154,38 @@
             transition: background-color 0.2s;
         }
 
-        #modifier-button {
+        #settings-button { 
+            top: 10px;
+            right: 10px; 
+            left: auto;
+            background-color: #9b59b6; 
+            font-size: 1.5em; 
+            line-height: 1;
+            padding: 5px 10px;
+        }
+
+        #modifier-button { 
+            bottom: 20px;
             left: 20px;
             background-color: #3498db; 
         }
         
-        #volume-button {
+        /* Botão de Roupa (Hanger) */
+        #hanger-button { 
+            bottom: 20px; 
             right: 20px; 
-            background-color: #9b59b6; 
+            background-color: #f39c12; 
             font-size: 1.5em; 
-            line-height: 1;
+            line-height: 1; 
+            padding: 5px 10px;
         }
-
+        
         .game-control-button:disabled {
             background-color: #7f8c8d; 
             cursor: not-allowed;
             box-shadow: none;
         }
         
-        /* Modal e Overlays (Restante inalterado) */
         .overlay {
             position: fixed;
             top: 0;
@@ -160,7 +210,58 @@
             display: flex;
             flex-direction: column;
             align-items: center; 
+            position: relative; 
         }
+
+        #volume-button-modal {
+            background-color: #9b59b6; 
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.5em; 
+            line-height: 1;
+            padding: 5px 10px;
+            cursor: pointer;
+            z-index: 201;
+        }
+        
+        #credits-button-modal {
+            position: absolute; 
+            top: 10px;
+            left: 10px;
+            background-color: #f39c12; 
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 1em;
+            cursor: pointer;
+            z-index: 201;
+        }
+
+        #settings-overlay .modal h2 {
+            margin-top: 5px; 
+            margin-bottom: 20px;
+        }
+        
+        #settings-overlay .modal #volume-button-modal {
+             position: absolute;
+             top: 10px;
+             right: 10px;
+        }
+
+        #credits-overlay .modal p {
+            text-align: center;
+            line-height: 1.5;
+            margin: 10px 0;
+        }
+        #credits-overlay .modal h3 {
+            margin-top: 25px;
+            color: #2ecc71;
+            border-bottom: 2px solid #2ecc71;
+            padding-bottom: 5px;
+        }
+
 
         .control-block {
             margin-bottom: 25px; 
@@ -193,36 +294,90 @@
             transition: background-color 0.2s;
         }
 
+        /* Game Over Styles (Cinza Azulado e menor) */
         #game-over-overlay {
-            position: absolute; 
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.7); 
             display: none; 
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            color: #ecf0f1;
-            font-size: 2em;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            cursor: pointer; 
-            z-index: 100;
+            align-items: center;
+            z-index: 200; 
+            cursor: default;
         }
         
-        #record-break-message {
+        #game-over-modal {
+            background-color: #34495e; /* Cinza azulado (cor do game-board) */
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5); 
+            width: 80%;
+            max-width: 300px; /* Reduz o tamanho */
+            color: #ecf0f1;
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            text-align: center;
             font-size: 1.5em;
+        }
+        
+        #game-over-modal p {
+            font-weight: bold;
+            margin: 5px 0;
+            text-shadow: none;
+        }
+
+        #game-over-modal #record-break-message {
+            font-size: 1.1em;
             color: #f1c40f; 
-            margin-bottom: 5px;
+            margin-bottom: 15px;
             display: none; 
         }
-        /* --- FIM DOS ESTILOS CSS --- */
+        
+        #game-over-modal #final-score {
+            font-size: 1.8em; 
+            margin-top: 10px;
+            margin-bottom: 20px; 
+        }
+
+        #restart-button {
+            background-color: #2ecc71; /* Cor verde para o botão "Ir Denovo" */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.2s;
+        }
+        
+        /* CSS para o Hanger Overlay (Roupa) */
+        #hanger-overlay { 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
     </style>
 </head>
 <body>
     
+    <div id="splash-screen">
+        <img src="MiniMiniGames.png" alt="Mini Games Splash Screen">
+    </div>
+
+    <button id="settings-button" class="game-control-button" aria-label="Abrir Configurações">⚙️</button>
+
     <div id="score-board">
         <span id="score-icon">🔴</span><span id="score-value">0</span>
     </div>
@@ -240,9 +395,8 @@
     <div id="message">Arraste a tela para começar!</div>
 
     <button id="modifier-button" class="game-control-button">Modificadores</button>
+    <button id="hanger-button" class="game-control-button">👕</button>
     
-    <button id="volume-button" class="game-control-button" aria-label="Ativar/Desativar Som">🔇</button>
-
     
     <audio id="food-sound" preload="auto">
         <source src="Comida.m4a" type="audio/mp4">
@@ -252,11 +406,72 @@
     <audio id="slide-sound" preload="auto">
         <source src="Slide.mp3" type="audio/mpeg">
     </audio>
+    
+    <audio id="click-sound" preload="auto">
+        <source src="Click_1.mp3" type="audio/mpeg">
+    </audio>
 
 
-    <div id="speed-overlay" class="overlay">
+    <div id="settings-overlay" class="overlay">
         <div class="modal">
-            <h2>Configurações do Jogo</h2> 
+            <button id="credits-button-modal">Créditos</button>
+            <button id="volume-button-modal" aria-label="Ativar/Desativar Som">🔇</button>
+            
+            <h2>⚙️ Configurações</h2> 
+            
+            <button id="close-settings-modal" style="background-color: #2ecc71; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 20px;">
+                Fechar
+            </button>
+        </div>
+    </div>
+    
+    <div id="credits-overlay" class="overlay">
+        <div class="modal">
+            <h2>✨ Créditos</h2> 
+            
+            <p><strong>Mini Snake</strong></p>
+            <p>Criado por <strong>P3DR0CA</strong></p>
+
+            <h3>Agradecimentos:</h3>
+            <p><strong>Gemini (Google)</strong><br>Ajudou a criar o jogo.</p>
+            <p><strong>Kodular</strong><br>Ajudou a transformar site em app.</p>
+            <p><strong>Git Hub</strong><br>Ajudou em site para transformar em app.</p>
+            
+            <button id="close-credits-modal" style="background-color: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 20px;">
+                Voltar
+            </button>
+        </div>
+    </div>
+    
+    <div id="hanger-overlay" class="overlay"> 
+        <div class="modal">
+            <h2>👕 Trocar Cor e Aparência</h2> 
+            
+            <div class="control-block">
+                <h3>Cor Atual</h3>
+                <div id="color-controls" style="display: flex; align-items: center; justify-content: center;">
+                    <button id="prev-color-button">&lt;</button>
+                    <span id="current-color-display" style="font-size: 2.5em; margin: 0 15px;">🟨</span>
+                    <button id="next-color-button">&gt;</button>
+                </div>
+            </div>
+
+            <div class="control-block"> 
+                <h3>Olhos</h3>
+                <div id="eye-controls" style="display: flex; align-items: center; justify-content: center;">
+                    <button id="prev-eye-button">&lt;</button>
+                    <span id="current-eye-display" style="font-size: 2.5em; margin: 0 15px;"></span>
+                    <button id="next-eye-button">&gt;</button>
+                </div>
+            </div>
+            <button id="close-hanger-modal" style="background-color: #2ecc71; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 20px;">
+                Fechar
+            </button>
+        </div>
+    </div>
+    <div id="modifier-overlay" class="overlay">
+        <div class="modal">
+            <h2>✨ Modificadores</h2> 
             
             <div class="control-block">
                 <h3>Modo de Jogo</h3>
@@ -285,44 +500,52 @@
                 </div>
             </div>
 
-            <div class="control-block">
-                <h3>Cor da Cobra</h3>
-                <div id="color-controls" style="display: flex; align-items: center; justify-content: center;">
-                    <button id="prev-color-button">&lt;</button>
-                    <span id="current-color-display" style="font-size: 2.5em; margin: 0 15px;">🟨</span>
-                    <button id="next-color-button">&gt;</button>
-                </div>
-            </div>
-
-            <button id="close-speed-modal" style="background-color: #2ecc71; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 20px;">
+            <button id="close-modifier-modal" style="background-color: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 20px;">
                 Fechar
             </button>
         </div>
     </div>
 
-    <div id="game-over-overlay">
-        <p id="record-break-message">NOVO RECORDE!</p> 
-        <p>GAME OVER!</p>
-        <p id="final-score"></p>
-        <p>Clique para jogar novamente</p> 
-    </div>
 
+    <div id="game-over-overlay">
+        <div id="game-over-modal">
+            <p id="record-break-message">NOVO RECORDE!</p> 
+            <p>GAME OVER!</p>
+            <p id="final-score"></p>
+            <button id="restart-button">Ir Denovo</button> </div>
+    </div>
     <script>
-        // --- VARIÁVEIS E CONSTANTES ---
+        const SPLASH_SCREEN = document.getElementById('splash-screen'); 
         const GAME_BOARD = document.getElementById('game-board');
         const SCORE_BOARD_ELEMENT = document.getElementById('score-board'); 
         const SCORE_VALUE_ELEMENT = document.getElementById('score-value');
         const MESSAGE_BOX = document.getElementById('message');
         const GAME_OVER_OVERLAY = document.getElementById('game-over-overlay'); 
+        const GAME_OVER_MODAL = document.getElementById('game-over-modal'); 
         const FINAL_SCORE_ELEMENT = document.getElementById('final-score'); 
-        const MODIFIER_BUTTON = document.getElementById('modifier-button'); 
-        const VOLUME_BUTTON = document.getElementById('volume-button'); 
-        const SPEED_OVERLAY = document.getElementById('speed-overlay');     
-        const CLOSE_SPEED_MODAL = document.getElementById('close-speed-modal'); 
         
+        const MODIFIER_BUTTON = document.getElementById('modifier-button'); 
+        const SETTINGS_BUTTON = document.getElementById('settings-button'); 
+        const HANGER_BUTTON = document.getElementById('hanger-button'); 
+        const RESTART_BUTTON = document.getElementById('restart-button');
+        
+        const SETTINGS_OVERLAY = document.getElementById('settings-overlay');
+        const MODIFIER_OVERLAY = document.getElementById('modifier-overlay'); 
+        const HANGER_OVERLAY = document.getElementById('hanger-overlay'); 
+        const CREDITS_OVERLAY = document.getElementById('credits-overlay'); 
+        
+        const CLOSE_SETTINGS_MODAL = document.getElementById('close-settings-modal'); 
+        const CLOSE_MODIFIER_MODAL = document.getElementById('close-modifier-modal'); 
+        const CLOSE_HANGER_MODAL = document.getElementById('close-hanger-modal'); 
+        const CLOSE_CREDITS_MODAL = document.getElementById('close-credits-modal'); 
+        
+        const VOLUME_BUTTON_MODAL = document.getElementById('volume-button-modal'); 
+        const CREDITS_BUTTON_MODAL = document.getElementById('credits-button-modal'); 
+
         const FOOD_SOUND = document.getElementById('food-sound'); 
         const SLIDE_SOUND = document.getElementById('slide-sound'); 
-
+        const CLICK_SOUND = document.getElementById('click-sound'); 
+        
         const SPEED_BLOCK = document.getElementById('speed-block'); 
         const CURRENT_SPEED_DISPLAY = document.getElementById('current-speed-display'); 
         const PREV_SPEED_BUTTON = document.getElementById('prev-speed-button');   
@@ -331,6 +554,12 @@
         const CURRENT_COLOR_DISPLAY = document.getElementById('current-color-display'); 
         const PREV_COLOR_BUTTON = document.getElementById('prev-color-button');   
         const NEXT_COLOR_BUTTON = document.getElementById('next-color-button'); 
+        
+        // CONSTANTES PARA OLHOS
+        const CURRENT_EYE_DISPLAY = document.getElementById('current-eye-display'); 
+        const PREV_EYE_BUTTON = document.getElementById('prev-eye-button');      
+        const NEXT_EYE_BUTTON = document.getElementById('next-eye-button');      
+        // FIM CONSTANTES
 
         const CURRENT_SIZE_DISPLAY = document.getElementById('current-size-display');
         const PREV_SIZE_BUTTON = document.getElementById('prev-size-button');
@@ -357,7 +586,6 @@
         const HIGH_SCORE_KEY_MINI = 'miniSnakeHighScore';
         const HIGH_SCORE_KEY_HELL = 'snakeHellHighScore';
 
-        // ESTADO
         let gameLoopInterval = null; 
         let currentIntervalMS = BASE_INTERVAL_MS; 
         let activeMultiplierIndex = 1; 
@@ -369,7 +597,6 @@
         let isNewRecord = false; 
         let isGameOver = false;
         
-        // ESTADO DO ÁUDIO
         let isMuted = true; 
         let audioHasBeenActivated = false; 
 
@@ -385,73 +612,76 @@
             { emoji: '⬜', css: '#ecf0f1' }
         ];
         let activeColorIndex = 0; 
+        
+        // ARRAY DE OLHOS
+        const SNAKE_EYES = [
+            { emoji: '', name: 'Sem Rosto' }, 
+            { emoji: '👀', name: 'Observador' }
+        ];
+        let activeEyeIndex = 0; 
 
         let snake = []; 
         let food = {}; 
         let direction = { x: 0, y: 0 }; 
         let newDirection = { x: 0, y: 0 }; 
+        // Armazena a última direção válida para a rotação da cabeça
+        let lastValidDirection = { x: 0, y: -1 }; 
 
-        // Swipe
         let touchStartX = 0;
         let touchStartY = 0;
         const SWIPE_THRESHOLD = 30; 
         
-        // --- FUNÇÕES DE ÁUDIO ---
-        
         function playFoodSound() {
             if (FOOD_SOUND && audioHasBeenActivated && !isMuted) {
                 FOOD_SOUND.currentTime = 0; 
-                FOOD_SOUND.play().catch(error => {
-                    // O catch é essencial para evitar erros no console do WebView
-                });
+                FOOD_SOUND.play().catch(error => {});
             }
         }
         
         function playSlideSound() {
             if (SLIDE_SOUND && audioHasBeenActivated && !isMuted) {
                 SLIDE_SOUND.currentTime = 0; 
-                SLIDE_SOUND.play().catch(error => {
-                    // O catch é essencial para evitar erros no console do WebView
-                });
+                SLIDE_SOUND.play().catch(error => {});
             }
         }
         
-        // FUNÇÃO TOGGLE VOLUME CORRIGIDA PARA DESBLOQUEAR O ÁUDIO MOBILE
+        function playClickSound() {
+            if (CLICK_SOUND && audioHasBeenActivated && !isMuted) {
+                CLICK_SOUND.currentTime = 0;
+                CLICK_SOUND.play().catch(error => {});
+            }
+        }
+        
         function toggleVolume() {
             isMuted = !isMuted;
-            VOLUME_BUTTON.textContent = isMuted ? '🔇' : '🔈';
+            VOLUME_BUTTON_MODAL.textContent = isMuted ? '🔇' : '🔈'; 
 
             if (!isMuted) {
-                // Tenta liberar o contexto de áudio na primeira vez
-                if (!audioHasBeenActivated && FOOD_SOUND && SLIDE_SOUND) {
+                if (!audioHasBeenActivated && FOOD_SOUND && SLIDE_SOUND && CLICK_SOUND) { 
                     FOOD_SOUND.muted = false; 
-                    SLIDE_SOUND.muted = false; // Garante que o Slide também está disponível
-
-                    // Usa o FOOD_SOUND para tentar o desbloqueio, mas afeta o contexto global
+                    SLIDE_SOUND.muted = false; 
+                    CLICK_SOUND.muted = false; 
                     FOOD_SOUND.play()
                         .then(() => {
-                            // Desbloqueio bem-sucedido: pausa e marca como ativo
                             FOOD_SOUND.pause();
                             FOOD_SOUND.currentTime = 0;
                             SLIDE_SOUND.pause();
+                            CLICK_SOUND.pause(); 
                             audioHasBeenActivated = true;
                         })
                         .catch(error => {
-                            // Se falhar (o que é raro aqui), volta para mudo
                             console.error(`Falha ao liberar áudio. Erro: ${error.name}.`);
                             isMuted = true; 
-                            VOLUME_BUTTON.textContent = '🔇';
+                            VOLUME_BUTTON_MODAL.textContent = '🔇'; 
                         });
                 }
             } else {
-                // MUTE
                 FOOD_SOUND.pause();
                 SLIDE_SOUND.pause();
+                CLICK_SOUND.pause(); 
             }
         }
 
-        // --- FUNÇÕES AUXILIARES DE RECORD ---
-        
         function getActiveHighScoreKey() {
             return GAME_MODES[activeModeIndex].name === "Snake Hell" 
                 ? HIGH_SCORE_KEY_HELL 
@@ -484,8 +714,6 @@
             }
         }
         
-        // --- FUNÇÕES AUXILIARES DE JOGO ---
-
         function getRandomGridPosition() { 
             const min = 2;
             const max = gridSize - 1;
@@ -537,7 +765,6 @@
             let nextX = direction.x; 
             let nextY = direction.y; 
             
-            // Prioriza o eixo com maior diferença de movimento
             if (Math.abs(diffX) > Math.abs(diffY)) { 
                 if (Math.abs(diffX) > SWIPE_THRESHOLD) { 
                     if (diffX > 0) { if (direction.x !== -1) { nextX = 1; nextY = 0; } } else { if (direction.x !== 1) { nextX = -1; nextY = 0; } } 
@@ -554,20 +781,43 @@
 
             newDirection = { x: nextX, y: nextY }; 
         }
-
-        // --- FUNÇÕES DE LÓGICA DO JOGO E RENDERIZAÇÃO ---
         
         function drawGame() {
             GAME_BOARD.innerHTML = '';
 
             const snakeColor = SNAKE_COLORS[activeColorIndex].css; 
-            
-            snake.forEach(segment => {
+            const snakeEye = SNAKE_EYES[activeEyeIndex].emoji; 
+
+            snake.forEach((segment, index) => { 
                 const snakeElement = document.createElement('div');
                 snakeElement.style.gridRowStart = segment.y;
                 snakeElement.style.gridColumnStart = segment.x;
                 snakeElement.classList.add('snake');
                 snakeElement.style.backgroundColor = snakeColor; 
+                
+                if (index === 0) { // Segmento da Cabeça
+                    snakeElement.classList.add('snake-head'); 
+                    
+                    if (snakeEye !== '') { // Renderiza os olhos apenas se houver emoji
+                        // Armazena a última direção válida
+                        const currentDir = direction.x === 0 && direction.y === 0 ? lastValidDirection : direction;
+                        
+                        // LÓGICA DE INVERSÃO/FLIP (Horizontal para Direita OU Baixo)
+                        let transform = ''; // Padrão (scale(1)) para Esquerda e Cima
+                        
+                        if (currentDir.x === 1 || currentDir.y === 1) { // Direita (x=1) OU Baixo (y=1)
+                            transform = 'scaleX(-1)'; 
+                        } 
+                        
+                        const eyeElement = document.createElement('span');
+                        eyeElement.classList.add('eyes');
+                        eyeElement.textContent = snakeEye;
+                        // Aplica a transformação
+                        eyeElement.style.transform = transform;
+                        snakeElement.appendChild(eyeElement);
+                    }
+                }
+                
                 GAME_BOARD.appendChild(snakeElement);
             });
 
@@ -585,6 +835,9 @@
             if (isGameOver) return;
 
             direction = newDirection;
+            if (direction.x !== 0 || direction.y !== 0) { 
+                lastValidDirection = { x: direction.x, y: direction.y }; 
+            }
             if (direction.x === 0 && direction.y === 0) { return; }
 
             const newHead = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
@@ -655,8 +908,18 @@
             removeInputListeners(); 
         }
 
+        function showSplashScreen() {
+            SPLASH_SCREEN.style.opacity = 1;
+            SPLASH_SCREEN.style.display = 'flex'; 
 
-        // --- FUNÇÕES DE ESTADO E INICIALIZAÇÃO ---
+            setTimeout(() => {
+                SPLASH_SCREEN.style.opacity = 0; 
+                setTimeout(() => {
+                    SPLASH_SCREEN.style.display = 'none';
+                    resetGame(); 
+                }, 500); 
+            }, 1000); 
+        }
 
         function updateModeDisplay() {
             const mode = GAME_MODES[activeModeIndex];
@@ -732,11 +995,27 @@
         function goToPrevColor() { if (activeColorIndex > 0) { activeColorIndex--; updateColorDisplay(); } }
         function goToNextColor() { if (activeColorIndex < SNAKE_COLORS.length - 1) { activeColorIndex++; updateColorDisplay(); } }
         
-        function updateModifierButtonState() {
-            MODIFIER_BUTTON.disabled = gameLoopInterval !== null;
+        // FUNÇÕES DE CONTROLE DE OLHOS
+        function updateEyeDisplay() {
+            const eye = SNAKE_EYES[activeEyeIndex];
+            // Se o emoji for vazio, exibe um espaço/indicador
+            CURRENT_EYE_DISPLAY.textContent = eye.emoji === '' ? '[Sem Rosto]' : eye.emoji;
+            CURRENT_EYE_DISPLAY.style.fontSize = eye.emoji === '' ? '1.2em' : '2.5em';
+
+            PREV_EYE_BUTTON.disabled = activeEyeIndex === 0;
+            NEXT_EYE_BUTTON.disabled = activeEyeIndex === SNAKE_EYES.length - 1;
+            drawGame();
         }
         
-        // --- FUNÇÕES DE EVENT LISTENERS (INPUT) ---
+        function goToPrevEye() { if (activeEyeIndex > 0) { activeEyeIndex--; updateEyeDisplay(); } }
+        function goToNextEye() { if (activeEyeIndex < SNAKE_EYES.length - 1) { activeEyeIndex++; updateEyeDisplay(); } }
+        // FIM FUNÇÕES DE OLHOS
+
+        function updateModifierButtonState() {
+            MODIFIER_BUTTON.disabled = gameLoopInterval !== null; 
+            HANGER_BUTTON.disabled = gameLoopInterval !== null; 
+        }
+        
         function removeInputListeners() {
             GAME_BOARD.removeEventListener('touchstart', handleTouchStart, false);
             GAME_BOARD.removeEventListener('touchmove', handleTouchMove, false);
@@ -769,6 +1048,7 @@
             updateSizeDisplay(); 
             updateSpeedDisplay(); 
             updateColorDisplay(); 
+            updateEyeDisplay(); 
             updateModifierButtonState(); 
             drawGame(); 
         }
@@ -804,48 +1084,110 @@
 
             direction = { x: 0, y: 0 };
             newDirection = { x: 0, y: 0 };
+            lastValidDirection = { x: 0, y: -1 }; // Resetar para Cima
             MESSAGE_BOX.textContent = `Arraste a tela para começar!`;
 
             setupGame(); 
         }
 
-        // --- INICIALIZAÇÃO ÚNICA DE LISTENERS DE MODAL/REINÍCIO ---
-
         function initializeGlobalListeners() {
-            PREV_MODE_BUTTON.addEventListener('click', goToPrevMode);
-            NEXT_MODE_BUTTON.addEventListener('click', goToNextMode);
-            PREV_SPEED_BUTTON.addEventListener('click', goToPrevSpeed);
-            NEXT_SPEED_BUTTON.addEventListener('click', goToNextSpeed);
-            PREV_SIZE_BUTTON.addEventListener('click', goToPrevSize); 
-            NEXT_SIZE_BUTTON.addEventListener('click', goToNextSize); 
-            PREV_COLOR_BUTTON.addEventListener('click', goToPrevColor);
-            NEXT_COLOR_BUTTON.addEventListener('click', goToNextColor);
+            PREV_MODE_BUTTON.addEventListener('click', () => { playClickSound(); goToPrevMode(); });
+            NEXT_MODE_BUTTON.addEventListener('click', () => { playClickSound(); goToNextMode(); });
+            PREV_SPEED_BUTTON.addEventListener('click', () => { playClickSound(); goToPrevSpeed(); });
+            NEXT_SPEED_BUTTON.addEventListener('click', () => { playClickSound(); goToNextSpeed(); });
+            PREV_SIZE_BUTTON.addEventListener('click', () => { playClickSound(); goToPrevSize(); }); 
+            NEXT_SIZE_BUTTON.addEventListener('click', () => { playClickSound(); goToNextSize(); }); 
             
-            MODIFIER_BUTTON.addEventListener('click', () => {
-                if (MODIFIER_BUTTON.disabled) return; 
-                SPEED_OVERLAY.style.display = 'flex';
+            // Listeners de Cor da Cobra
+            PREV_COLOR_BUTTON.addEventListener('click', () => { playClickSound(); goToPrevColor(); });
+            NEXT_COLOR_BUTTON.addEventListener('click', () => { playClickSound(); goToNextColor(); });
+            
+            // Listeners de Olhos
+            PREV_EYE_BUTTON.addEventListener('click', () => { playClickSound(); goToPrevEye(); });
+            NEXT_EYE_BUTTON.addEventListener('click', () => { playClickSound(); goToNextEye(); });
+            
+            VOLUME_BUTTON_MODAL.addEventListener('click', () => { playClickSound(); toggleVolume(); });
+            
+            CREDITS_BUTTON_MODAL.addEventListener('click', () => { 
+                playClickSound(); 
+                SETTINGS_OVERLAY.style.display = 'none'; 
+                CREDITS_OVERLAY.style.display = 'flex';
+            });
+            CLOSE_CREDITS_MODAL.addEventListener('click', () => { 
+                playClickSound(); 
+                CREDITS_OVERLAY.style.display = 'none'; 
+                SETTINGS_OVERLAY.style.display = 'flex'; 
+            });
+
+            SETTINGS_BUTTON.addEventListener('click', () => { 
+                playClickSound(); 
+                SETTINGS_OVERLAY.style.display = 'flex';
             });
             
-            VOLUME_BUTTON.addEventListener('click', toggleVolume);
-            
-            SPEED_OVERLAY.addEventListener('click', (e) => {
+            // Listeners do Botão de Roupa (Hanger)
+            HANGER_BUTTON.addEventListener('click', () => { 
+                if (HANGER_BUTTON.disabled) return; 
+                playClickSound(); 
+                HANGER_OVERLAY.style.display = 'flex';
+            });
+
+            HANGER_OVERLAY.addEventListener('click', (e) => {
                 if (e.target.classList.contains('overlay')) {
-                    SPEED_OVERLAY.style.display = 'none';
+                    playClickSound(); 
+                    HANGER_OVERLAY.style.display = 'none';
                 }
             });
-            CLOSE_SPEED_MODAL.addEventListener('click', () => {
-                SPEED_OVERLAY.style.display = 'none';
+            CLOSE_HANGER_MODAL.addEventListener('click', () => {
+                playClickSound(); 
+                HANGER_OVERLAY.style.display = 'none';
+            });
+            // FIM dos Listeners do Hanger
+
+            MODIFIER_BUTTON.addEventListener('click', () => { 
+                if (MODIFIER_BUTTON.disabled) return; 
+                playClickSound(); 
+                MODIFIER_OVERLAY.style.display = 'flex';
             });
 
+            SETTINGS_OVERLAY.addEventListener('click', (e) => {
+                if (e.target.classList.contains('overlay')) {
+                    playClickSound(); 
+                    SETTINGS_OVERLAY.style.display = 'none';
+                }
+            });
+            CLOSE_SETTINGS_MODAL.addEventListener('click', () => {
+                playClickSound(); 
+                SETTINGS_OVERLAY.style.display = 'none';
+            });
+
+            MODIFIER_OVERLAY.addEventListener('click', (e) => {
+                if (e.target.classList.contains('overlay')) {
+                    playClickSound(); 
+                    MODIFIER_OVERLAY.style.display = 'none';
+                }
+            });
+            CLOSE_MODIFIER_MODAL.addEventListener('click', () => {
+                playClickSound(); 
+                MODIFIER_OVERLAY.style.display = 'none';
+            });
+            
             window.addEventListener('resize', resetGame); 
-            GAME_OVER_OVERLAY.addEventListener('click', resetGame);
-            GAME_OVER_OVERLAY.addEventListener('touchend', resetGame);
+            
+            // Listener de reinício APENAS no botão "Ir Denovo"
+            RESTART_BUTTON.addEventListener('click', () => {
+                playClickSound();
+                resetGame();
+            });
+            
+            // Impedir que o clique na tela Game Over reinicie o jogo
+            GAME_OVER_MODAL.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+            });
         }
         
-        // --- FUNÇÃO PRINCIPAL DE INÍCIO ---
         function init() {
             initializeGlobalListeners();
-            resetGame();
+            showSplashScreen(); 
         }
         
         window.onload = init;
