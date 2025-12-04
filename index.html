@@ -78,9 +78,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 125%; /* Tamanho médio para os olhos */
+            font-size: 125%; 
             line-height: 1;
-            transition: transform 0.18s linear; /* Transição suave para o flip */
+            transition: transform 0.18s linear; 
         }
 
         .food {
@@ -170,7 +170,7 @@
             background-color: #3498db; 
         }
         
-        /* Botão de Roupa (Hanger) */
+        /* Botão de Roupa (Hanger) - REINSERIDO */
         #hanger-button { 
             bottom: 20px; 
             right: 20px; 
@@ -239,6 +239,21 @@
             z-index: 201;
         }
 
+        /* Botão de Licença no modal de configurações (Branco) */
+        #license-button-modal { 
+            position: absolute; 
+            top: 50px; 
+            left: 10px;
+            background-color: #ecf0f1; /* Branco */
+            color: #2c3e50; /* Cor do fundo do body para contraste */
+            border: none;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 1em;
+            cursor: pointer;
+            z-index: 201;
+        }
+        
         #settings-overlay .modal h2 {
             margin-top: 5px; 
             margin-bottom: 20px;
@@ -261,7 +276,28 @@
             border-bottom: 2px solid #2ecc71;
             padding-bottom: 5px;
         }
+        
+        /* Estilo para o modal de Licença */
+        #license-overlay .modal {
+             max-height: 80vh; 
+             overflow-y: auto;
+             align-items: flex-start; 
+             text-align: left;
+        }
 
+        #license-overlay .modal h2 {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        #license-overlay .modal p {
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
 
         .control-block {
             margin-bottom: 25px; 
@@ -294,7 +330,7 @@
             transition: background-color 0.2s;
         }
 
-        /* Game Over Styles (Cinza Azulado e menor) */
+        /* Game Over Styles */
         #game-over-overlay {
             position: fixed;
             top: 0;
@@ -310,12 +346,12 @@
         }
         
         #game-over-modal {
-            background-color: #34495e; /* Cinza azulado (cor do game-board) */
+            background-color: #34495e; 
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5); 
             width: 80%;
-            max-width: 300px; /* Reduz o tamanho */
+            max-width: 300px; 
             color: #ecf0f1;
             display: flex;
             flex-direction: column;
@@ -344,7 +380,7 @@
         }
 
         #restart-button {
-            background-color: #2ecc71; /* Cor verde para o botão "Ir Denovo" */
+            background-color: #2ecc71; 
             color: white;
             border: none;
             padding: 10px 20px;
@@ -355,7 +391,7 @@
             transition: background-color 0.2s;
         }
         
-        /* CSS para o Hanger Overlay (Roupa) */
+        /* CSS para o Hanger Overlay (Roupa) - REINSERIDO */
         #hanger-overlay { 
             position: fixed;
             top: 0;
@@ -395,10 +431,7 @@
     <div id="message">Arraste a tela para começar!</div>
 
     <button id="modifier-button" class="game-control-button">Modificadores</button>
-    <button id="hanger-button" class="game-control-button">👕</button>
-    
-    
-    <audio id="food-sound" preload="auto">
+    <button id="hanger-button" class="game-control-button">👕</button> <audio id="food-sound" preload="auto">
         <source src="Comida.m4a" type="audio/mp4">
         <source src="Comida.mp3" type="audio/mpeg">
     </audio>
@@ -415,7 +448,7 @@
     <div id="settings-overlay" class="overlay">
         <div class="modal">
             <button id="credits-button-modal">Créditos</button>
-            <button id="volume-button-modal" aria-label="Ativar/Desativar Som">🔇</button>
+            <button id="license-button-modal">LICENÇA</button> <button id="volume-button-modal" aria-label="Ativar/Desativar Som">🔇</button>
             
             <h2>⚙️ Configurações</h2> 
             
@@ -443,6 +476,17 @@
         </div>
     </div>
     
+    <div id="license-overlay" class="overlay">
+        <div class="modal">
+            <h2>Mini Snake – Proprietary License</h2> 
+            
+            <p id="license-text-content"></p>
+
+            <button id="close-license-modal" style="background-color: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 20px;">
+                Voltar
+            </button>
+        </div>
+    </div>
     <div id="hanger-overlay" class="overlay"> 
         <div class="modal">
             <h2>👕 Trocar Cor e Aparência</h2> 
@@ -464,6 +508,7 @@
                     <button id="next-eye-button">&gt;</button>
                 </div>
             </div>
+
             <button id="close-hanger-modal" style="background-color: #2ecc71; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 20px;">
                 Fechar
             </button>
@@ -512,7 +557,8 @@
             <p id="record-break-message">NOVO RECORDE!</p> 
             <p>GAME OVER!</p>
             <p id="final-score"></p>
-            <button id="restart-button">Ir Denovo</button> </div>
+            <button id="restart-button">Ir Denovo</button>
+        </div>
     </div>
     <script>
         const SPLASH_SCREEN = document.getElementById('splash-screen'); 
@@ -526,18 +572,22 @@
         
         const MODIFIER_BUTTON = document.getElementById('modifier-button'); 
         const SETTINGS_BUTTON = document.getElementById('settings-button'); 
-        const HANGER_BUTTON = document.getElementById('hanger-button'); 
-        const RESTART_BUTTON = document.getElementById('restart-button');
+        const HANGER_BUTTON = document.getElementById('hanger-button'); // REINSERIDO
+        const RESTART_BUTTON = document.getElementById('restart-button'); // REINSERIDO
         
         const SETTINGS_OVERLAY = document.getElementById('settings-overlay');
         const MODIFIER_OVERLAY = document.getElementById('modifier-overlay'); 
-        const HANGER_OVERLAY = document.getElementById('hanger-overlay'); 
+        const HANGER_OVERLAY = document.getElementById('hanger-overlay'); // REINSERIDO
         const CREDITS_OVERLAY = document.getElementById('credits-overlay'); 
+        const LICENSE_OVERLAY = document.getElementById('license-overlay'); 
         
         const CLOSE_SETTINGS_MODAL = document.getElementById('close-settings-modal'); 
         const CLOSE_MODIFIER_MODAL = document.getElementById('close-modifier-modal'); 
-        const CLOSE_HANGER_MODAL = document.getElementById('close-hanger-modal'); 
+        const CLOSE_HANGER_MODAL = document.getElementById('close-hanger-modal'); // REINSERIDO
         const CLOSE_CREDITS_MODAL = document.getElementById('close-credits-modal'); 
+        const LICENSE_BUTTON_MODAL = document.getElementById('license-button-modal');
+        const CLOSE_LICENSE_MODAL = document.getElementById('close-license-modal'); 
+        const LICENSE_TEXT_ELEMENT = document.getElementById('license-text-content');
         
         const VOLUME_BUTTON_MODAL = document.getElementById('volume-button-modal'); 
         const CREDITS_BUTTON_MODAL = document.getElementById('credits-button-modal'); 
@@ -555,7 +605,7 @@
         const PREV_COLOR_BUTTON = document.getElementById('prev-color-button');   
         const NEXT_COLOR_BUTTON = document.getElementById('next-color-button'); 
         
-        // CONSTANTES PARA OLHOS
+        // CONSTANTES PARA OLHOS - REINSERIDO
         const CURRENT_EYE_DISPLAY = document.getElementById('current-eye-display'); 
         const PREV_EYE_BUTTON = document.getElementById('prev-eye-button');      
         const NEXT_EYE_BUTTON = document.getElementById('next-eye-button');      
@@ -574,6 +624,29 @@
         const RECORD_BREAK_MESSAGE_GAME_OVER = document.getElementById('record-break-message'); 
         
         const GAME_TITLE_ELEMENT = document.getElementById('game-title'); 
+
+        const LICENSE_TEXT_CONTENT = `Mini Snake – Proprietary License (All Rights Reserved)
+
+Copyright © MiniMinigames. All rights reserved.
+
+This software, known as “Mini Snake”, including all source code, compiled code, images, graphics, audio files, text, interfaces, and any other related files or materials, is the exclusive property of MiniMinigames.
+
+No part of this software may be copied, reproduced, modified, distributed, sublicensed, sold, rented, reverse-engineered, decompiled, or used for any commercial or public purpose without prior written permission from MiniMinigames.
+
+Permission is granted to the end user solely to install, run, and use the software for personal and non-commercial purposes.
+
+MiniMinigames may, at its sole discretion, grant special permissions or additional rights to specific individuals or entities, provided such permissions are given in writing.
+
+All rights not expressly granted are reserved by MiniMinigames.
+
+
+---
+
+DISCLAIMER OF WARRANTY
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+IN NO EVENT SHALL MINIMINIGAMES BE LIABLE FOR ANY CLAIMS, DAMAGES, LOSSES, OR OTHER LIABILITIES, WHETHER IN CONTRACT, TORT, OR OTHERWISE, ARISING FROM THE USE OF, OR INABILITY TO USE, THE SOFTWARE.`;
 
         const BASE_INTERVAL_MS = 180; 
         const SPEED_MULTIPLIERS = [0.5, 1, 1.5, 2, 2.5, 3]; 
@@ -613,7 +686,7 @@
         ];
         let activeColorIndex = 0; 
         
-        // ARRAY DE OLHOS
+        // ARRAY DE OLHOS - REINSERIDO
         const SNAKE_EYES = [
             { emoji: '', name: 'Sem Rosto' }, 
             { emoji: '👀', name: 'Observador' }
@@ -624,8 +697,7 @@
         let food = {}; 
         let direction = { x: 0, y: 0 }; 
         let newDirection = { x: 0, y: 0 }; 
-        // Armazena a última direção válida para a rotação da cabeça
-        let lastValidDirection = { x: 0, y: -1 }; 
+        let lastValidDirection = { x: 0, y: -1 }; // Resetar para Cima
 
         let touchStartX = 0;
         let touchStartY = 0;
@@ -786,7 +858,7 @@
             GAME_BOARD.innerHTML = '';
 
             const snakeColor = SNAKE_COLORS[activeColorIndex].css; 
-            const snakeEye = SNAKE_EYES[activeEyeIndex].emoji; 
+            const snakeEye = SNAKE_EYES[activeEyeIndex].emoji; // REINSERIDO
 
             snake.forEach((segment, index) => { 
                 const snakeElement = document.createElement('div');
@@ -798,12 +870,11 @@
                 if (index === 0) { // Segmento da Cabeça
                     snakeElement.classList.add('snake-head'); 
                     
-                    if (snakeEye !== '') { // Renderiza os olhos apenas se houver emoji
-                        // Armazena a última direção válida
+                    if (snakeEye !== '') { 
                         const currentDir = direction.x === 0 && direction.y === 0 ? lastValidDirection : direction;
                         
                         // LÓGICA DE INVERSÃO/FLIP (Horizontal para Direita OU Baixo)
-                        let transform = ''; // Padrão (scale(1)) para Esquerda e Cima
+                        let transform = ''; 
                         
                         if (currentDir.x === 1 || currentDir.y === 1) { // Direita (x=1) OU Baixo (y=1)
                             transform = 'scaleX(-1)'; 
@@ -812,7 +883,6 @@
                         const eyeElement = document.createElement('span');
                         eyeElement.classList.add('eyes');
                         eyeElement.textContent = snakeEye;
-                        // Aplica a transformação
                         eyeElement.style.transform = transform;
                         snakeElement.appendChild(eyeElement);
                     }
@@ -995,10 +1065,9 @@
         function goToPrevColor() { if (activeColorIndex > 0) { activeColorIndex--; updateColorDisplay(); } }
         function goToNextColor() { if (activeColorIndex < SNAKE_COLORS.length - 1) { activeColorIndex++; updateColorDisplay(); } }
         
-        // FUNÇÕES DE CONTROLE DE OLHOS
+        // FUNÇÕES DE CONTROLE DE OLHOS - REINSERIDO
         function updateEyeDisplay() {
             const eye = SNAKE_EYES[activeEyeIndex];
-            // Se o emoji for vazio, exibe um espaço/indicador
             CURRENT_EYE_DISPLAY.textContent = eye.emoji === '' ? '[Sem Rosto]' : eye.emoji;
             CURRENT_EYE_DISPLAY.style.fontSize = eye.emoji === '' ? '1.2em' : '2.5em';
 
@@ -1013,7 +1082,7 @@
 
         function updateModifierButtonState() {
             MODIFIER_BUTTON.disabled = gameLoopInterval !== null; 
-            HANGER_BUTTON.disabled = gameLoopInterval !== null; 
+            HANGER_BUTTON.disabled = gameLoopInterval !== null; // REINSERIDO
         }
         
         function removeInputListeners() {
@@ -1048,7 +1117,7 @@
             updateSizeDisplay(); 
             updateSpeedDisplay(); 
             updateColorDisplay(); 
-            updateEyeDisplay(); 
+            updateEyeDisplay(); // REINSERIDO
             updateModifierButtonState(); 
             drawGame(); 
         }
@@ -1084,7 +1153,7 @@
 
             direction = { x: 0, y: 0 };
             newDirection = { x: 0, y: 0 };
-            lastValidDirection = { x: 0, y: -1 }; // Resetar para Cima
+            lastValidDirection = { x: 0, y: -1 };
             MESSAGE_BOX.textContent = `Arraste a tela para começar!`;
 
             setupGame(); 
@@ -1098,11 +1167,10 @@
             PREV_SIZE_BUTTON.addEventListener('click', () => { playClickSound(); goToPrevSize(); }); 
             NEXT_SIZE_BUTTON.addEventListener('click', () => { playClickSound(); goToNextSize(); }); 
             
-            // Listeners de Cor da Cobra
             PREV_COLOR_BUTTON.addEventListener('click', () => { playClickSound(); goToPrevColor(); });
             NEXT_COLOR_BUTTON.addEventListener('click', () => { playClickSound(); goToNextColor(); });
             
-            // Listeners de Olhos
+            // Listeners de Olhos - REINSERIDO
             PREV_EYE_BUTTON.addEventListener('click', () => { playClickSound(); goToPrevEye(); });
             NEXT_EYE_BUTTON.addEventListener('click', () => { playClickSound(); goToNextEye(); });
             
@@ -1119,12 +1187,26 @@
                 SETTINGS_OVERLAY.style.display = 'flex'; 
             });
 
+            // Listeners da Licença
+            LICENSE_BUTTON_MODAL.addEventListener('click', () => { 
+                playClickSound(); 
+                LICENSE_TEXT_ELEMENT.textContent = LICENSE_TEXT_CONTENT; 
+                SETTINGS_OVERLAY.style.display = 'none'; 
+                LICENSE_OVERLAY.style.display = 'flex';
+            });
+            
+            CLOSE_LICENSE_MODAL.addEventListener('click', () => { 
+                playClickSound(); 
+                LICENSE_OVERLAY.style.display = 'none'; 
+                SETTINGS_OVERLAY.style.display = 'flex'; 
+            });
+
             SETTINGS_BUTTON.addEventListener('click', () => { 
                 playClickSound(); 
                 SETTINGS_OVERLAY.style.display = 'flex';
             });
             
-            // Listeners do Botão de Roupa (Hanger)
+            // Listeners do Botão de Roupa (Hanger) - REINSERIDO
             HANGER_BUTTON.addEventListener('click', () => { 
                 if (HANGER_BUTTON.disabled) return; 
                 playClickSound(); 
@@ -1142,6 +1224,7 @@
                 HANGER_OVERLAY.style.display = 'none';
             });
             // FIM dos Listeners do Hanger
+
 
             MODIFIER_BUTTON.addEventListener('click', () => { 
                 if (MODIFIER_BUTTON.disabled) return; 
@@ -1173,13 +1256,13 @@
             
             window.addEventListener('resize', resetGame); 
             
-            // Listener de reinício APENAS no botão "Ir Denovo"
+            // Listener de reinício APENAS no botão "Ir Denovo" - RESTAURADO
             RESTART_BUTTON.addEventListener('click', () => {
                 playClickSound();
                 resetGame();
             });
             
-            // Impedir que o clique na tela Game Over reinicie o jogo
+            // Impedir que o clique na tela Game Over reinicie o jogo (a menos que seja o botão)
             GAME_OVER_MODAL.addEventListener('click', (e) => {
                 e.stopPropagation(); 
             });
